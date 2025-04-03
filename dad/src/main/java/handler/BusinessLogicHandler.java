@@ -17,7 +17,7 @@ public class BusinessLogicHandler {
 
     public void handlePostSensorData(RoutingContext ctx) {
         try {
-            // Decodificar el cuerpo JSON a nuestro DTO
+            // Decodificar el cuerpo JSON a nuestro DTO.
              final SensorValueInput input = Json.decodeValue(ctx.getBodyAsString(), SensorValueInput.class);
 
             if (input == null || input.id_sensor == null || input.valor == null) {
