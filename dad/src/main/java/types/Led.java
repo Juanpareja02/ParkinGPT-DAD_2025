@@ -2,65 +2,96 @@ package types;
 
 import java.util.Objects;
 
+/**
+* Entidad que representa un Actuador (ej. LED, relé).
+* Corresponde a la tabla 'Actuador' en la base de datos.
+*/
 public class Led {
-	private Integer id;
-	private Boolean encendido;
-	private Long timestamp;
-	
-	public Led(Integer id, Boolean encendido, Long timestamp) {
-		super();
-		this.id = id;
-		this.encendido = encendido;
-		this.timestamp = timestamp;
-	}
-	
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	public Boolean getEncendido() {
-		return encendido;
-	}
-	public void setEncendido(Boolean encendido) {
-		this.encendido = encendido;
-	}
-	public Long getTimestamp() {
-		return timestamp;
-	}
-	public void setTimestamp(Long timestamp) {
-		this.timestamp = timestamp;
-	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(encendido, id, timestamp);
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Led other = (Led) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (timestamp == null) {
-			if (other.timestamp != null)
-				return false;
-		} else if (!timestamp.equals(other.timestamp))
-			return false;
-		if (encendido == null) {
-			if (other.encendido != null)
-				return false;
-		}else if (!encendido.equals(other.encendido))
-			return false;
-		return true;
-	}
-	
+
+ private Long id; // PK
+ private String nombre;
+ private String tipo;
+ private String identificador; // Identificador único del actuador físico
+ private Long idDispositivo; // FK a Dispositivo
+
+ public Led() {
+ }
+
+ public Led(Long id, String nombre, String tipo, String identificador, Long idDispositivo) {
+     this.id = id;
+     this.nombre = nombre;
+     this.tipo = tipo;
+     this.identificador = identificador;
+     this.idDispositivo = idDispositivo;
+ }
+
+ // Getters y Setters
+ public Long getId() {
+     return id;
+ }
+
+ public void setId(Long id) {
+     this.id = id;
+ }
+
+ public String getNombre() {
+     return nombre;
+ }
+
+ public void setNombre(String nombre) {
+     this.nombre = nombre;
+ }
+
+ public String getTipo() {
+     return tipo;
+ }
+
+ public void setTipo(String tipo) {
+     this.tipo = tipo;
+ }
+
+ public String getIdentificador() {
+     return identificador;
+ }
+
+ public void setIdentificador(String identificador) {
+     this.identificador = identificador;
+ }
+
+ public Long getIdDispositivo() {
+     return idDispositivo;
+ }
+
+ public void setIdDispositivo(Long idDispositivo) {
+     this.idDispositivo = idDispositivo;
+ }
+
+ // equals, hashCode, toString
+ @Override
+ public boolean equals(Object o) {
+     if (this == o) return true;
+     if (o == null || getClass() != o.getClass()) return false;
+     Led actuador = (Led) o;
+     return Objects.equals(id, actuador.id) &&
+            Objects.equals(nombre, actuador.nombre) &&
+            Objects.equals(tipo, actuador.tipo) &&
+            Objects.equals(identificador, actuador.identificador) &&
+            Objects.equals(idDispositivo, actuador.idDispositivo);
+ }
+
+ @Override
+ public int hashCode() {
+     return Objects.hash(id, nombre, tipo, identificador, idDispositivo);
+ }
+
+ @Override
+ public String toString() {
+     return "Actuador{" +
+            "id=" + id +
+            ", nombre='" + nombre + '\'' +
+            ", tipo='" + tipo + '\'' +
+            ", identificador='" + identificador + '\'' +
+            ", idDispositivo=" + idDispositivo +
+            '}';
+ }
 }
