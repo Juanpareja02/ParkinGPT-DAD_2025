@@ -3,7 +3,8 @@ package parkingpt;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import mqtt.ParkingMqttClient;
-import vertx.MySQLVerticle;
+import vertx.BusinessRestVerticle;
+import vertx.CrudRestVerticle;
 
 import java.util.*;
 
@@ -34,7 +35,9 @@ public class ParkingController extends AbstractVerticle {
 
         // Desplegar con este controller como dependencia
         vertx.deployVerticle(new ParkingMqttClient(this));
-        vertx.deployVerticle(MySQLVerticle.class.getName());
+        vertx.deployVerticle(CrudRestVerticle.class.getName());
+        vertx.deployVerticle(BusinessRestVerticle.class.getName());
+
     }
 
     // Método simulado que decide si activar un actuador en función del valor del sensor

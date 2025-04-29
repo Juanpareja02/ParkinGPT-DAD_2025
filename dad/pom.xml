@@ -45,6 +45,19 @@
           <version>4.1.63.Final</version>
           <classifier>osx-x86_64</classifier>
         </dependency>
+        
+        <dependency>
+		  <groupId>io.vertx</groupId>
+		  <artifactId>vertx-jdbc-client</artifactId>
+		  <version>4.5.1</version> <!-- Usa la misma versión que tu Vert.x -->
+		</dependency>
+
+		<dependency>
+		  <groupId>mysql</groupId>
+		  <artifactId>mysql-connector-java</artifactId>
+		  <version>8.0.33</version>
+		</dependency>
+
 
 	</dependencies> 
 

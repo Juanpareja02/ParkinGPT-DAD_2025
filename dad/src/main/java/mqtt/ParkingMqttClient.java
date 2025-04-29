@@ -47,6 +47,8 @@ public class ParkingMqttClient extends AbstractVerticle {
 
                 mqttClient.publishHandler(message -> {
                     System.out.println("Mensaje recibido en topic: " + message.topicName());
+                    //System.out.println("Recibida petición para sensorData: " + idSensor + " -> " + valor);
+
 
                     try {
                         String json = message.payload().toString("UTF-8");
