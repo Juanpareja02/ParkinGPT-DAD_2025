@@ -10,15 +10,15 @@ import java.util.Objects;
 */
 public class LedState {
 
- private Long id; // PK
- private Long idActuador; // FK a Actuador
+ private Integer id; // PK
+ private Integer idActuador; // FK a Actuador
  private Boolean estado; // estado (boolean)
  private LocalDateTime timestamp; // timestamp (datetime)
 
  public LedState() {
  }
 
- public LedState(Long id, Long idActuador, Boolean estado, LocalDateTime timestamp) {
+ public LedState(Integer id, Integer idActuador, Boolean estado, LocalDateTime timestamp) {
      this.id = id;
      this.idActuador = idActuador;
      this.estado = estado;
@@ -26,26 +26,26 @@ public class LedState {
  }
 
   // Constructor sin ID (útil al crear nuevos registros antes de insertarlos)
-  public LedState(Long idActuador, Boolean estado, LocalDateTime timestamp) {
+  public LedState(Integer idActuador, Boolean estado, LocalDateTime timestamp) {
      this.idActuador = idActuador;
      this.estado = estado;
      this.timestamp = timestamp;
  }
 
  // Getters y Setters
- public Long getId() {
+ public Integer getId() {
      return id;
  }
 
- public void setId(Long id) {
+ public void setId(Integer id) {
      this.id = id;
  }
 
- public Long getIdActuador() {
+ public Integer getIdActuador() {
      return idActuador;
  }
 
- public void setIdActuador(Long idActuador) {
+ public void setIdActuador(Integer idActuador) {
      this.idActuador = idActuador;
  }
 

@@ -8,16 +8,16 @@ import java.util.Objects;
 */
 public class Led {
 
- private Long id; // PK
+ private Integer id; // PK
  private String nombre;
  private String tipo;
  private String identificador; // Identificador único del actuador físico
- private Long idDispositivo; // FK a Dispositivo
+ private Integer idDispositivo; // FK a Dispositivo
 
  public Led() {
  }
 
- public Led(Long id, String nombre, String tipo, String identificador, Long idDispositivo) {
+ public Led(Integer id, String nombre, String tipo, String identificador, Integer idDispositivo) {
      this.id = id;
      this.nombre = nombre;
      this.tipo = tipo;
@@ -26,11 +26,11 @@ public class Led {
  }
 
  // Getters y Setters
- public Long getId() {
+ public Integer getId() {
      return id;
  }
 
- public void setId(Long id) {
+ public void setId(Integer id) {
      this.id = id;
  }
 
@@ -58,11 +58,11 @@ public class Led {
      this.identificador = identificador;
  }
 
- public Long getIdDispositivo() {
+ public Integer getIdDispositivo() {
      return idDispositivo;
  }
 
- public void setIdDispositivo(Long idDispositivo) {
+ public void setIdDispositivo(Integer idDispositivo) {
      this.idDispositivo = idDispositivo;
  }
 

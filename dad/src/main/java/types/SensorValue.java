@@ -9,15 +9,15 @@ import java.util.Objects;
 */
 public class SensorValue {
 
- private Long id; // PK
- private Long idSensor; // FK a Sensor
+ private Integer id; // PK
+ private Integer idSensor; // FK a Sensor
  private Float valor; // valor (float en PDF, usando Double en Java)
  private LocalDateTime timestamp; // timestamp (datetime en PDF)
 
  public SensorValue() {
  }
 
- public SensorValue(Long id, Long idSensor, Float valor, LocalDateTime timestamp) {
+ public SensorValue(Integer id, Integer idSensor, Float valor, LocalDateTime timestamp) {
      this.id = id;
      this.idSensor = idSensor;
      this.valor = valor;
@@ -25,7 +25,7 @@ public class SensorValue {
  }
 
   // Constructor sin ID (útil al crear nuevos registros antes de insertarlos)
- public SensorValue(Long idSensor, Float valor, LocalDateTime timestamp) {
+ public SensorValue(Integer idSensor, Float valor, LocalDateTime timestamp) {
      this.idSensor = idSensor;
      this.valor = valor;
      this.timestamp = timestamp;
@@ -33,19 +33,19 @@ public class SensorValue {
 
 
  // Getters y Setters
- public Long getId() {
+ public Integer getId() {
      return id;
  }
 
- public void setId(Long id) {
+ public void setId(Integer id) {
      this.id = id;
  }
 
- public Long getIdSensor() {
+ public Integer getIdSensor() {
      return idSensor;
  }
 
- public void setIdSensor(Long idSensor) {
+ public void setIdSensor(Integer idSensor) {
      this.idSensor = idSensor;
  }
 

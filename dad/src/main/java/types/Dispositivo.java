@@ -8,25 +8,25 @@ import java.util.Objects;
 */
 public class Dispositivo {
 
- private Long id; // PK
+ private Integer id; // PK
  private String plaza;
- private Long idGrupo; // FK a Grupo
+ private Integer idGrupo; // FK a Grupo
 
  public Dispositivo() {
  }
 
- public Dispositivo(Long id, String plaza, Long idGrupo) {
+ public Dispositivo(Integer id, String plaza, Integer idGrupo) {
      this.id = id;
      this.plaza = plaza;
      this.idGrupo = idGrupo;
  }
 
  // Getters y Setters
- public Long getId() {
+ public Integer getId() {
      return id;
  }
 
- public void setId(Long id) {
+ public void setId(Integer id) {
      this.id = id;
  }
 
@@ -38,11 +38,11 @@ public class Dispositivo {
      this.plaza = plaza;
  }
 
- public Long getIdGrupo() {
+ public Integer getIdGrupo() {
      return idGrupo;
  }
 
- public void setIdGrupo(Long idGrupo) {
+ public void setIdGrupo(Integer idGrupo) {
      this.idGrupo = idGrupo;
  }
 

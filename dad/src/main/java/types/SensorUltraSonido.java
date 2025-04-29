@@ -13,7 +13,7 @@ public class SensorUltraSonido {
  private String tipo;
  private String identificador; // Identificador único del sensor físico
  private Long idDispositivo; // FK a Dispositivo
- private Float thresholdDistancia; // Campo añadido para ParkinGPT que mide la distancia del coche al sensor
+ private static Float thresholdDistancia; // Campo añadido para ParkinGPT que mide la distancia del coche al sensor
 
  public SensorUltraSonido() {
  }
@@ -68,7 +68,7 @@ public class SensorUltraSonido {
      this.idDispositivo = idDispositivo;
  }
 
-  public Float getThresholdDistancia() {
+  public static Float getThresholdDistancia() {
      return thresholdDistancia;
  }
 

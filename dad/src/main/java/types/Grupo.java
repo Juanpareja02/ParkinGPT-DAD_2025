@@ -8,7 +8,7 @@ import java.util.Objects;
 */
 public class Grupo {
 
- private Long id; // PK
+ private Integer id; // PK
  private String nombre;
  private String canalMqtt; // canal_mqtt
 
@@ -17,18 +17,18 @@ public class Grupo {
  }
 
  // Constructor con todos los campos
- public Grupo(Long id, String nombre, String canalMqtt) {
+ public Grupo(Integer id, String nombre, String canalMqtt) {
      this.id = id;
      this.nombre = nombre;
      this.canalMqtt = canalMqtt;
  }
 
  // Getters y Setters
- public Long getId() {
+ public Integer getId() {
      return id;
  }
 
- public void setId(Long id) {
+ public void setId(Integer id) {
      this.id = id;
  }
 

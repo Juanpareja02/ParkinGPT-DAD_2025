@@ -1,4 +1,4 @@
-package mqtt;
+package vertx;
 
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.mqtt.messages.MqttPublishMessage;
