@@ -20,27 +20,18 @@ public class ParkingController extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startFuture) {
 
-        // Simulación de configuración
         inicializarConfiguracion();
 
-        vertx.createHttpServer().requestHandler(r -> {
-            r.response().end("<h1>Bienvenido a ParkinGPT</h1>Aplicación para matrakas.");
-        }).listen(8089, result -> {
-            if (result.succeeded()) {
-                startFuture.complete();
-            } else {
-                startFuture.fail(result.cause());
-            }
-        });
-
-        // Desplegar con este controller como dependencia
+        // Desplegar verticles necesarios
         vertx.deployVerticle(new ParkingMqttClient(this));
         vertx.deployVerticle(CrudRestVerticle.class.getName());
         vertx.deployVerticle(BusinessRestVerticle.class.getName());
 
+        startFuture.complete();
+        System.out.println("✅ ParkingController desplegó todos los verticles correctamente.");
     }
 
-    // Método simulado que decide si activar un actuador en función del valor del sensor
+    // ===== Lógica de negocio simulada =====
     public boolean evaluarSensor(String idSensor, float valor) {
         Float[] rango = rangosPermitidos.getOrDefault(idSensor, new Float[]{0f, 100f});
         return valor < rango[0] || valor > rango[1];
@@ -51,7 +42,6 @@ public class ParkingController extends AbstractVerticle {
     }
 
     public boolean getNextActuatorState(String actuatorId) {
-        // Simula un toggle de estado
         boolean estadoActual = actuadorEstado.getOrDefault(actuatorId, false);
         boolean nuevoEstado = !estadoActual;
         actuadorEstado.put(actuatorId, nuevoEstado);
@@ -66,19 +56,12 @@ public class ParkingController extends AbstractVerticle {
         return canalesMQTT;
     }
 
-    // Inicialización simulada de relaciones
+    // ===== Configuración simulada =====
     private void inicializarConfiguracion() {
-        // Sensores con su rango permitido
         rangosPermitidos.put("sensor_1", new Float[]{15.0f, 30.0f});
-
-        // Relación sensor-actuador
         sensorToActuator.put("sensor_1", "act_1");
-
-        // Estados iniciales
         actuadorEstado.put("act_1", false);
-
-        // Canales MQTT para el grupo del sensor y del actuador
-        canalesMQTT.add("grupo_1/canal_sensor"); // para recibir mensajes de sensores
+        canalesMQTT.add("grupo_1/canal_sensor");
         actuadorCanal.put("act_1", "grupo_1/canal_actuador");
     }
 }
