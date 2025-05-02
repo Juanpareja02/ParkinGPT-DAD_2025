@@ -15,7 +15,7 @@ import parkingpt.ParkingController;
 import java.util.List;
 
 public class ParkingMqttClient extends AbstractVerticle {
-
+	
     private Gson gson;
     private ParkingController controller;
 

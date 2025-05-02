@@ -18,10 +18,10 @@ public class CrudRestVerticle extends AbstractVerticle {
     public void start(Promise<Void> startFuture) {
 
         jdbc = JDBCClient.createShared(vertx, new JsonObject()
-            .put("url", "jdbc:mysql://localhost:3306/parkingpt_db")
-            .put("driver_class", "com.mysql.cj.jdbc.Driver")
+        	.put("driver_class", "org.mariadb.jdbc.Driver")
+        	.put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
             .put("user", "root")
-            .put("password", "Gratis123")
+            .put("password", "Gratis")
         );
 
         Router router = Router.router(vertx);
