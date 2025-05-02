@@ -21,7 +21,7 @@ public class CrudRestVerticle extends AbstractVerticle {
         	.put("driver_class", "org.mariadb.jdbc.Driver")
         	.put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
             .put("user", "root")
-            .put("password", "Gratis")
+            .put("password", "Gratis")//Introducir contraseña de tu mariadb
         );
 
         Router router = Router.router(vertx);
