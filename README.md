@@ -97,7 +97,9 @@ El archivo `ParkinGPT.postman_collection.json` contiene todos los endpoints list
 
 ## 🧠 Autores y créditos
 
-- Juan Álvaro – Ingeniería Informática de Computadores (Universidad de Sevilla)
+- Juan Álvaro Pareja – Ingeniería Informática de Computadores (Universidad de Sevilla)
+- Marcos Guisado – Ingeniería Informática de Computadores (Universidad de Sevilla)
+- Hector Bartolomé – Ingeniería Informática de Computadores (Universidad de Sevilla)
 
 ---
 
