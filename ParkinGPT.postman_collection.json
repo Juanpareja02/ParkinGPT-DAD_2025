@@ -1,0 +1,117 @@
+
+{
+  "info": {
+    "name": "ParkinGPT API",
+    "_postman_id": "12345678-park-collection",
+    "description": "Colección de endpoints para el sistema ParkinGPT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST - Insertar Sensor",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Sensor 1\",\n  \"tipo\": \"ultrasonico\",\n  \"identificador\": \"sensor_1\",\n  \"id_dispositivo\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8088/api/sensors",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8088",
+          "path": ["api", "sensors"]
+        }
+      }
+    },
+    {
+      "name": "POST - Insertar Actuador",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"LED Rojo\",\n  \"tipo\": \"led\",\n  \"identificador\": \"act_1\",\n  \"id_dispositivo\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8088/api/actuators",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8088",
+          "path": ["api", "actuators"]
+        }
+      }
+    },
+    {
+      "name": "POST - Enviar dato de sensor",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_sensor\": \"1\",\n  \"valor\": 35.5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8090/api/business/sensorData",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8090",
+          "path": ["api", "business", "sensorData"]
+        }
+      }
+    },
+    {
+      "name": "GET - Últimos 10 valores de un sensor",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8090/api/business/sensorValues/1/latest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8090",
+          "path": ["api", "business", "sensorValues", "1", "latest"]
+        }
+      }
+    },
+    {
+      "name": "GET - Últimos 10 estados de un actuador",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8090/api/business/actuatorStates/1/latest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8090",
+          "path": ["api", "business", "actuatorStates", "1", "latest"]
+        }
+      }
+    },
+    {
+      "name": "GET - Último valor por sensor de un grupo",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8090/api/business/group/1/sensorValues/latest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8090",
+          "path": ["api", "business", "group", "1", "sensorValues", "latest"]
+        }
+      }
+    },
+    {
+      "name": "GET - Último estado por actuador de un grupo",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8090/api/business/group/1/actuatorStates/latest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8090",
+          "path": ["api", "business", "group", "1", "actuatorStates", "latest"]
+        }
+      }
+    }
+  ]
+}
