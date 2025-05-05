@@ -23,7 +23,6 @@ public class CrudRestVerticle extends AbstractVerticle {
             .put("user", "root")
             .put("password", "Gratis")//Introducir contraseña de tu mariadb
         );
-        //Prueba 2
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
 
