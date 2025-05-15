@@ -6,90 +6,89 @@ import mqtt.ParkingMqttClient;
 import vertx.BusinessRestVerticle;
 import vertx.CrudRestVerticle;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ParkingController extends AbstractVerticle {
 
+    // Rangos configurados por sensor (idSensor → [min, max])
+    private final Map<Integer, Float[]> rangosPermitidos = new HashMap<>();
+    // Asociaciones sensor → actuador (rojo/out)
+    private final Map<Integer, String> sensorToActuatorOut = new HashMap<>();
+    // Asociaciones sensor → actuador (verde/in)
+    private final Map<Integer, String> sensorToActuatorIn = new HashMap<>();
+    // Estado actual de cada actuador (idActuator → estado)
+    private final Map<String, Boolean> actuadorEstado = new HashMap<>();
+    // Canal MQTT por actuador (idActuator → topic)
+    private final Map<String, String> actuadorCanal = new HashMap<>();
+    // Canales MQTT de sensores a los que suscribirse
+    private final List<String> canalesMQTT = new ArrayList<>();
 
-private final Map<String, Float[]> rangosPermitidos = new HashMap<>();
-private final Map<String, String> sensorToActuator = new HashMap<>();
-private final Map<String, Boolean> actuadorEstado = new HashMap<>();
-private final Map<String, String> actuadorCanal = new HashMap<>();
-private final List<String> canalesMQTT = new ArrayList<>();
+    @Override
+    public void start(Promise<Void> startFuture) {
+        inicializarConfiguracion();
 
-@Override
-public void start(Promise<Void> startFuture) {
-    inicializarConfiguracion();
+        // Desplegar verticles
+        vertx.deployVerticle(new ParkingMqttClient(this));
+        vertx.deployVerticle(CrudRestVerticle.class.getName());
+        vertx.deployVerticle(BusinessRestVerticle.class.getName());
 
-    // Desplegar verticles necesarios
-    vertx.deployVerticle(new ParkingMqttClient(this));
-    vertx.deployVerticle(CrudRestVerticle.class.getName());
-    vertx.deployVerticle(BusinessRestVerticle.class.getName());
+        System.out.println("ParkingController desplegó todos los verticles correctamente.");
+        startFuture.complete();
+    }
 
-    startFuture.complete();
-    System.out.println("✅ ParkingController desplegó todos los verticles correctamente.");
-}
+    /** Evalúa si el valor del sensor está fuera de rango */
+    public boolean evaluarSensor(int idSensor, float valor) {
+        Float[] rango = rangosPermitidos.getOrDefault(idSensor, new Float[]{0f, 100f});
+        return valor < rango[0] || valor > rango[1];
+    }
 
-/**
- * Evalúa si un valor de sensor está fuera del rango permitido
- */
-public boolean evaluarSensor(String idSensor, float valor) {
-    Float[] rango = rangosPermitidos.getOrDefault(idSensor, new Float[]{0f, 100f});
-    return valor > rango[0] && valor < rango[1];
-}
+    /** Actuador rojo (out) para un sensor dado */
+    public String getActuatorOutForSensor(int sensorId) {
+        return sensorToActuatorOut.get(sensorId);
+    }
 
-/**
- * Obtiene el ID del actuador asociado a un sensor
- */
-public String getActuatorIdForSensor(String sensorId) {
-    return sensorToActuator.get(sensorId);
-}
+    /** Actuador verde (in) para un sensor dado */
+    public String getActuatorInForSensor(int sensorId) {
+        return sensorToActuatorIn.get(sensorId);
+    }
 
-/**
- * Alterna el estado del actuador (ON/OFF)
- */
-public boolean getNextActuatorState(String actuatorId) {
-    boolean estadoActual = actuadorEstado.getOrDefault(actuatorId, false);
-    boolean nuevoEstado = !estadoActual;
-    actuadorEstado.put(actuatorId, nuevoEstado);
-    return nuevoEstado;
-}
+    /** Alterna y devuelve el nuevo estado de un actuador */
+    public boolean getNextActuatorState(String actuatorId) {
+        boolean current = actuadorEstado.getOrDefault(actuatorId, false);
+        boolean next = !current;
+        actuadorEstado.put(actuatorId, next);
+        return next;
+    }
 
-/**
- * Devuelve el canal MQTT asociado a un actuador
- */
-public String getCanalActuador(String actuatorId) {
-    return actuadorCanal.getOrDefault(actuatorId, "canal_actuador_default");
-}
+    /** Topic MQTT asociado a un actuador */
+    public String getCanalActuador(String actuatorId) {
+        return actuadorCanal.getOrDefault(actuatorId, "canal_actuador_default");
+    }
 
-/**
- * Devuelve la lista de canales a los que suscribirse por MQTT
- */
-public List<String> getMQTTChannels() {
-    return canalesMQTT;
-}
+    /** Lista de topics de sensores para suscribirse */
+    public List<String> getMQTTChannels() {
+        return canalesMQTT;
+    }
 
-/**
- * Inicializa la configuración simulada de sensores y actuadores
- */
-private void inicializarConfiguracion() {
-    // Rango válido para sensor_1
-    rangosPermitidos.put("sensor_1", new Float[]{15.0f, 30.0f});
+    /** Configuración mock de sensores, actuadores y canales */
+    private void inicializarConfiguracion() {
+        // Rango para sensor 1
+        rangosPermitidos.put(1, new Float[]{10f, 30f});
 
-    // Relación sensor -> actuador
-    sensorToActuator.put("sensor_1", "act_1");
+        // Sensor 1 → actuador rojo "act_1"
+        sensorToActuatorOut.put(1, "act_1");
+        // Sensor 1 → actuador verde "act_2"
+        sensorToActuatorIn.put(1, "act_2");
 
-    // Estado inicial del actuador
-    actuadorEstado.put("act_1", false);
+        // Estados iniciales
+        actuadorEstado.put("act_1", false);
+        actuadorEstado.put("act_2", false);
 
-    // Canal MQTT al que se suscribe el sensor
-    canalesMQTT.add("grupo_1/canal_sensor");
+        // Canal de sensor
+        canalesMQTT.add("grupo_1/canal_sensor");
 
-    // Canal MQTT al que publica el actuador
-    actuadorCanal.put("act_1", "grupo_1/canal_actuador");
-}
-
+        // Canales de actuadores
+        actuadorCanal.put("act_1", "grupo_1/canal_actuador_rojo");
+        actuadorCanal.put("act_2", "grupo_1/canal_actuador_verde");
+    }
 }

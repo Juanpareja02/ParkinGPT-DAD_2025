@@ -6,9 +6,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
 
 public class CrudRestVerticle extends AbstractVerticle {
 
@@ -21,7 +18,7 @@ public class CrudRestVerticle extends AbstractVerticle {
         	.put("driver_class", "org.mariadb.jdbc.Driver")
         	.put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
             .put("user", "root")
-            .put("password", "Gratis")//Introducir contraseña de tu mariadb
+            .put("password", "Gratis")
         );
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
