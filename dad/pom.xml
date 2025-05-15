@@ -49,7 +49,7 @@
         <dependency>
 		  <groupId>io.vertx</groupId>
 		  <artifactId>vertx-jdbc-client</artifactId>
-		  <version>4.5.1</version> <!-- Usa la misma versión que tu Vert.x -->
+		  <version>4.5.1</version> 
 		</dependency>
 
 		<dependency>
@@ -60,7 +60,13 @@
 		<dependency>
     <groupId>org.mariadb.jdbc</groupId>
     <artifactId>mariadb-java-client</artifactId>
-    <version>3.1.4</version> <!-- o la más reciente -->
+    <version>3.1.4</version> 
+</dependency>
+
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-simple</artifactId>
+  <version>1.7.36</version>
 </dependency>
 
 
