@@ -23,9 +23,9 @@ public class BusinessRestVerticle extends AbstractVerticle {
             String idSensor = body.getString("id_sensor");
             float valor = body.getFloat("valor");
 
-            // TODO: guardar en BD (tabla SensorValue)
-            // TODO: consultar rango del sensor
-            // TODO: si fuera de rango, publicar MQTT para activar/desactivar
+            // guardar en BD (tabla SensorValue)
+            // consultar rango del sensor
+            // si fuera de rango, publicar MQTT para activar/desactivar
 
             ctx.response().setStatusCode(200).end("Sensor " + idSensor + " recibió valor: " + valor);
         });
@@ -34,7 +34,7 @@ public class BusinessRestVerticle extends AbstractVerticle {
         router.get("/api/business/sensorValues/:id_sensor/latest").handler(ctx -> {
             String idSensor = ctx.pathParam("id_sensor");
 
-            // TODO: consultar últimos 10 valores en la tabla SensorValue
+            // consultar últimos 10 valores en la tabla SensorValue
             ctx.response().putHeader("Content-Type", "application/json");
             ctx.response().end("[VALORES_SENSOR_SIMULADOS]");
         });
@@ -43,7 +43,7 @@ public class BusinessRestVerticle extends AbstractVerticle {
         router.get("/api/business/actuatorStates/:id_actuator/latest").handler(ctx -> {
             String idActuator = ctx.pathParam("id_actuator");
 
-            // TODO: consultar últimos 10 estados en la tabla ActuatorState
+            // consultar últimos 10 estados en la tabla ActuatorState
             ctx.response().putHeader("Content-Type", "application/json");
             ctx.response().end("[ESTADOS_ACTUADOR_SIMULADOS]");
         });
@@ -52,7 +52,7 @@ public class BusinessRestVerticle extends AbstractVerticle {
         router.get("/api/business/group/:id_grupo/sensorValues/latest").handler(ctx -> {
             String idGrupo = ctx.pathParam("id_grupo");
 
-            // TODO: consultar todos los sensores del grupo y devolver último valor de cada uno
+            // consultar todos los sensores del grupo y devolver último valor de cada uno
             ctx.response().putHeader("Content-Type", "application/json");
             ctx.response().end("[ULTIMOS_VALORES_POR_SENSOR_DEL_GRUPO]");
         });
@@ -61,7 +61,7 @@ public class BusinessRestVerticle extends AbstractVerticle {
         router.get("/api/business/group/:id_grupo/actuatorStates/latest").handler(ctx -> {
             String idGrupo = ctx.pathParam("id_grupo");
 
-            // TODO: consultar todos los actuadores del grupo y devolver último estado de cada uno
+            // consultar todos los actuadores del grupo y devolver último estado de cada uno
             ctx.response().putHeader("Content-Type", "application/json");
             ctx.response().end("[ULTIMOS_ESTADOS_POR_ACTUADOR_DEL_GRUPO]");
         });
