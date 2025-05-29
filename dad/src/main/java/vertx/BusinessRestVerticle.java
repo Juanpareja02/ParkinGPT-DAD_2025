@@ -1,87 +1,127 @@
+/*  BusinessRestVerticle.java  ▸  API de alto nivel
+ *  -------------------------------------------------
+ *  - Solo expone endpoints “de negocio”.
+ *  - Nunca toca la BD: toda operación se delega a la API CRUD (localhost:8088).
+ *  - Decide lógica de rango y publica eventos en el EventBus.
+ */
+
 package vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.codec.BodyCodec;
 
 public class BusinessRestVerticle extends AbstractVerticle {
 
-    private JDBCClient jdbc;
+  private static final String CRUD_HOST = "localhost";
+  private static final int    CRUD_PORT = 8088;
 
-    @Override
-    public void start(Promise<Void> startFuture) {
-        // Configurar JDBC (MariaDB)
-        jdbc = JDBCClient.createShared(vertx, new JsonObject()
-            .put("url", "jdbc:mariadb://localhost:3306/parkingpt_db?useSSL=false&serverTimezone=UTC")
-            .put("driver_class", "org.mariadb.jdbc.Driver")
-            .put("user", "root")
-            .put("password", "Gratis")
-        );
+  private WebClient client;
 
-        Router router = Router.router(vertx);
-        router.route().handler(BodyHandler.create());
+  @Override
+  public void start(Promise<Void> startFuture) {
 
-        // 1) Recibir datos del sensor y publicar evento según rango
-        router.post("/api/business/sensorData").handler(ctx -> {
-            JsonObject body = ctx.getBodyAsJson();
-            int idSensor = body.getInteger("id_sensor");
-            float valor = body.getFloat("valor");
+    client = WebClient.create(vertx);                 // HTTP client → API CRUD
 
-            // 1. Insertar en sensor_values
-            jdbc.getConnection(connRes -> {
-                if (connRes.failed()) {
-                    ctx.response().setStatusCode(500).end("DB connection error");
-                    return;
-                }
-                SQLConnection conn = connRes.result();
-                String insertSQL = "INSERT INTO sensor_values (id_sensor, valor) VALUES (?, ?)";
-                conn.updateWithParams(insertSQL, new JsonArray().add(idSensor).add(valor), upRes -> {
-                    if (upRes.failed()) {
-                        ctx.response().setStatusCode(500).end("Error inserting sensor value");
-                        conn.close();
-                        return;
-                    }
-                    // 2. Consultar rango
-                    String rangeSQL = "SELECT min_value, max_value FROM sensor_ranges WHERE id_sensor = ?";
-                    conn.queryWithParams(rangeSQL, new JsonArray().add(idSensor), qr -> {
-                        if (qr.succeeded() && !qr.result().getRows().isEmpty()) {
-                            JsonObject row = qr.result().getRows().get(0);
-                            float min = row.getFloat("min_value");
-                            float max = row.getFloat("max_value");
+    Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
 
-                            JsonObject evt = new JsonObject()
-                                .put("id_sensor", idSensor)
-                                .put("valor", valor);
+    /* -------------------------------------------------------
+     * 1) POST /api/business/sensorData
+     *    1.1  llama a CRUD  →  /api/sensorValues     (insert)
+     *    1.2  llama a CRUD  ←  /api/sensor_ranges/{id}
+     *    1.3  publica sensor.inRange | sensor.outOfRange
+     * -----------------------------------------------------*/
+    router.post("/api/business/sensorData").handler(ctx -> {
 
-                            // Publicar en EventBus según dentro o fuera de rango
-                            if (valor < min || valor > max) {
-                                vertx.eventBus().publish("sensor.outOfRange", evt);
-                            } else {
-                                vertx.eventBus().publish("sensor.inRange", evt);
-                            }
-                        }
-                        ctx.response().setStatusCode(200).end("SensorData processed");
-                        conn.close();
-                    });
-                });
-            });
+      JsonObject body = ctx.getBodyAsJson();
+      if (body == null || !body.containsKey("id_sensor") || !body.containsKey("valor")) {
+        ctx.response().setStatusCode(400).end("JSON {id_sensor, valor} requerido");
+        return;
+      }
+
+      int   idSensor = body.getInteger("id_sensor");
+      float valor    = body.getFloat("valor");
+
+      /* 1.1 INSERT sensor_values vía CRUD */
+      client.post(CRUD_PORT, CRUD_HOST, "/api/sensorValues")
+            .sendJsonObject(new JsonObject()
+                .put("id_sensor", idSensor)
+                .put("valor",     valor), arInsert -> {
+
+        if (arInsert.failed()) {
+          ctx.response().setStatusCode(502).end("CRUD no disponible");
+          return;
+        }
+
+        /* 1.2 GET rango vía CRUD */
+        client.get(CRUD_PORT, CRUD_HOST, "/api/sensor_ranges/" + idSensor)
+              .as(BodyCodec.jsonArray())
+              .send(arRange -> {
+
+          if (arRange.failed() || arRange.result().body().isEmpty()) {
+            ctx.response().setStatusCode(404).end("Rango no encontrado");
+            return;
+          }
+
+          JsonObject range = arRange.result().body().getJsonObject(0);
+          float min = range.getFloat("min_value");
+          float max = range.getFloat("max_value");
+
+          JsonObject evt = new JsonObject()
+              .put("id_sensor", idSensor)
+              .put("valor",     valor);
+
+          /* 1.3 Lógica de negocio → EventBus */
+          if (valor < min || valor > max)
+               vertx.eventBus().publish("sensor.outOfRange", evt);
+          else vertx.eventBus().publish("sensor.inRange",    evt);
+
+          ctx.response().end("SensorData procesado (Business API)");
         });
+      });
+    });
 
+    /* 2) GET últimos 10 valores de sensor */
+    router.get("/api/business/sensorValues/:id/latest").handler(ctx -> {
+      int id = Integer.parseInt(ctx.pathParam("id"));
+      client.get(CRUD_PORT, CRUD_HOST,
+                 "/api/sensorValues/" + id)          // llama directamente al CRUD
+            .as(BodyCodec.string())
+            .send(ar -> {
+              if (ar.succeeded())
+                   ctx.response().putHeader("Content-Type","application/json")
+                                 .end(ar.result().body());
+              else ctx.response().setStatusCode(502).end("CRUD no disponible");
+            });
+    });
 
-        vertx.createHttpServer()
-             .requestHandler(router)
-             .listen(8090, http -> {
-                 if (http.succeeded()) {
-                     System.out.println("BusinessRestVerticle listening on port 8090");
-                     startFuture.complete();
-                 } else {
-                     startFuture.fail(http.cause());
-                 }
-             });
-    }
+    /* 3) GET últimos 10 estados de actuador */
+    router.get("/api/business/actuatorStates/:id/latest").handler(ctx -> {
+      int id = Integer.parseInt(ctx.pathParam("id"));
+      client.get(CRUD_PORT, CRUD_HOST,
+                 "/api/actuatorStates/" + id)
+            .as(BodyCodec.string())
+            .send(ar -> {
+              if (ar.succeeded())
+                   ctx.response().putHeader("Content-Type","application/json")
+                                 .end(ar.result().body());
+              else ctx.response().setStatusCode(502).end("CRUD no disponible");
+            });
+    });
+
+    /* ---------- servidor HTTP ---------- */
+    vertx.createHttpServer()
+         .requestHandler(router)
+         .listen(8090, ar -> {
+           if (ar.succeeded()) {
+             System.out.println("BusinessRestVerticle listening on 8090");
+             startFuture.complete();
+           } else startFuture.fail(ar.cause());
+         });
+  }
 }

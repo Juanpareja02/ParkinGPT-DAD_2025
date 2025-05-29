@@ -1,33 +1,37 @@
+// CrudRestVerticle.java  (puerto 8088)
 package vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 public class CrudRestVerticle extends AbstractVerticle {
 
-    private JDBCClient jdbc;
+  private JDBCClient jdbc;
 
-    @Override
-    public void start(Promise<Void> startFuture) {
+  @Override
+  public void start(Promise<Void> startFuture) {
 
-        jdbc = JDBCClient.createShared(vertx, new JsonObject()
-        	.put("driver_class", "org.mariadb.jdbc.Driver")
-        	.put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
-            .put("user", "root")
-            .put("password", "Gratis")
-        );
-        Router router = Router.router(vertx);
-        router.route().handler(BodyHandler.create());
+    jdbc = JDBCClient.createShared(vertx, new JsonObject()
+        .put("driver_class", "org.mariadb.jdbc.Driver")
+        .put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
+        .put("user", "root")
+        .put("password", "Gratis")
+    );
 
-        createCrud(router, "users", new String[]{"nombre", "usuario", "contraseña", "matricula"});
-        createCrud(router, "groups", new String[]{"nombre", "canal_mqtt"});
-        createCrud(router, "devices", new String[]{"plaza", "id_grupo"});
-        createCrud(router, "sensors", new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
-        createCrud(router, "actuators", new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
+    Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
+
+    createCrud(router, "users",        new String[]{"nombre", "usuario", "contraseña", "matricula"});
+    createCrud(router, "groups",       new String[]{"nombre", "canal_mqtt"});
+    createCrud(router, "devices",      new String[]{"plaza",  "id_grupo"});
+    createCrud(router, "sensors",      new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
+    createCrud(router, "actuators",    new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
+    createCrud(router, "sensor_ranges",new String[]{"min_value", "max_value"});          // ← NUEVO
+
 
         // sensor_values
         router.post("/api/sensorValues").handler(ctx -> {
@@ -65,15 +69,17 @@ public class CrudRestVerticle extends AbstractVerticle {
                         .end(res.result().getRows().toString()));
         });
 
-        vertx.createHttpServer().requestHandler(router).listen(8088, result -> {
-            if (result.succeeded()) {
-                startFuture.complete();
-                System.out.println("CRUD API escuchando en puerto 8088");
-            } else {
-                startFuture.fail(result.cause());
-            }
+        vertx.createHttpServer()
+        .requestHandler(router)
+        .listen(8088, ar -> {
+           if (ar.succeeded()) {
+             System.out.println("CRUD API escuchando en puerto 8088");
+             startFuture.complete();
+           } else startFuture.fail(ar.cause());
         });
     }
+    
+    
 
     private void createCrud(Router router, String entity, String[] fields) {
         String base = "/api/" + entity;
