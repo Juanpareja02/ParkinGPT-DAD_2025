@@ -39,6 +39,32 @@ public class ParkingMqttClient extends AbstractVerticle {
                     }
                 }));
 
+                // Manejar mensajes entrantes de sensores (JSON {id_sensor, valor})
+                mqttClient.publishHandler(msg -> {
+                    String payload = msg.payload().toString();
+                    try {
+                        JsonObject json = new JsonObject(payload);
+                        if (json.containsKey("id_sensor") && json.containsKey("valor")) {
+                            int sensorId = json.getInteger("id_sensor");
+                            float valor = json.getFloat("valor");
+
+                            JsonObject evt = new JsonObject()
+                                    .put("id_sensor", sensorId)
+                                    .put("valor", valor);
+
+                            if (controller.evaluarSensor(sensorId, valor)) {
+                                vertx.eventBus().publish("sensor.outOfRange", evt);
+                            } else {
+                                vertx.eventBus().publish("sensor.inRange", evt);
+                            }
+                        } else {
+                            System.err.println("Mensaje MQTT inválido: " + payload);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error procesando mensaje MQTT: " + e.getMessage());
+                    }
+                });
+
                 // Consumer para OUT OF RANGE → actuador rojo
                 MessageConsumer<JsonObject> outConsumer = vertx.eventBus().consumer("sensor.outOfRange");
                 outConsumer.handler(msg -> {

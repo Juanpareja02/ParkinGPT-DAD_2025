@@ -87,6 +87,14 @@ mvn clean compile exec:java -Dexec.mainClass=parkingpt.ParkingController
 
 Los tópicos se obtienen desde la base de datos (`groups.canal_mqtt`).
 
+Los sensores pueden publicar valores en formato JSON en su tópico MQTT:
+
+```json
+{ "id_sensor": 1, "valor": 23.5 }
+```
+
+El cliente MQTT procesa estos mensajes y reenvía el evento al bus (`sensor.outOfRange` o `sensor.inRange`).
+
 ---
 
 ## 📦 Postman
