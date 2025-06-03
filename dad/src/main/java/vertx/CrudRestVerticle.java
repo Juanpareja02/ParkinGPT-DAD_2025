@@ -34,7 +34,9 @@ public class CrudRestVerticle extends AbstractVerticle {
     createCrud(router, "devices",      new String[]{"plaza",  "id_grupo"});
     createCrud(router, "sensors",      new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
     createCrud(router, "actuators",    new String[]{"nombre", "tipo", "identificador", "id_dispositivo"});
-    createCrud(router, "sensor_ranges",new String[]{"min_value", "max_value"});          // ← NUEVO
+    createCrud(router, "sensor_ranges",
+                new String[]{"id_sensor", "min_value", "max_value"});
+         // ← NUEVO
 
 
         // sensor_values
