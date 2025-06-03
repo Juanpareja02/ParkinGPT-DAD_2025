@@ -90,7 +90,7 @@ public class BusinessRestVerticle extends AbstractVerticle {
     router.get("/api/business/sensorValues/:id/latest").handler(ctx -> {
       int id = Integer.parseInt(ctx.pathParam("id"));
       client.get(CRUD_PORT, CRUD_HOST,
-                 "/api/sensorValues/" + id)          // llama directamente al CRUD
+                 "/api/sensorValues/" + id + "/latest")
             .as(BodyCodec.string())
             .send(ar -> {
               if (ar.succeeded())
@@ -104,7 +104,35 @@ public class BusinessRestVerticle extends AbstractVerticle {
     router.get("/api/business/actuatorStates/:id/latest").handler(ctx -> {
       int id = Integer.parseInt(ctx.pathParam("id"));
       client.get(CRUD_PORT, CRUD_HOST,
-                 "/api/actuatorStates/" + id)
+                 "/api/actuatorStates/" + id + "/latest")
+            .as(BodyCodec.string())
+            .send(ar -> {
+              if (ar.succeeded())
+                   ctx.response().putHeader("Content-Type","application/json")
+                                 .end(ar.result().body());
+              else ctx.response().setStatusCode(502).end("CRUD no disponible");
+            });
+    });
+
+    /* 4) GET últimos 10 valores de sensor para un grupo */
+    router.get("/api/business/group/:id/sensorValues/latest").handler(ctx -> {
+      int id = Integer.parseInt(ctx.pathParam("id"));
+      client.get(CRUD_PORT, CRUD_HOST,
+                 "/api/group/" + id + "/sensorValues/latest")
+            .as(BodyCodec.string())
+            .send(ar -> {
+              if (ar.succeeded())
+                   ctx.response().putHeader("Content-Type","application/json")
+                                 .end(ar.result().body());
+              else ctx.response().setStatusCode(502).end("CRUD no disponible");
+            });
+    });
+
+    /* 5) GET últimos 10 estados de actuador para un grupo */
+    router.get("/api/business/group/:id/actuatorStates/latest").handler(ctx -> {
+      int id = Integer.parseInt(ctx.pathParam("id"));
+      client.get(CRUD_PORT, CRUD_HOST,
+                 "/api/group/" + id + "/actuatorStates/latest")
             .as(BodyCodec.string())
             .send(ar -> {
               if (ar.succeeded())
