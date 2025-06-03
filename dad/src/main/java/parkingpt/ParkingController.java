@@ -2,9 +2,12 @@ package parkingpt;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Future;
 import mqtt.ParkingMqttClient;
 import vertx.BusinessRestVerticle;
 import vertx.CrudRestVerticle;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.codec.BodyCodec;
 
 import java.util.*;
 
@@ -23,17 +26,93 @@ public class ParkingController extends AbstractVerticle {
     // Canales MQTT de sensores a los que suscribirse
     private final List<String> canalesMQTT = new ArrayList<>();
 
+    private static final String CRUD_HOST = "localhost";
+    private static final int    CRUD_PORT = 8088;
+
+    private WebClient client;
+
     @Override
     public void start(Promise<Void> startFuture) {
-        inicializarConfiguracion();
+        client = WebClient.create(vertx);
 
-        // Desplegar verticles
-        vertx.deployVerticle(new ParkingMqttClient(this));
-        vertx.deployVerticle(CrudRestVerticle.class.getName());
-        vertx.deployVerticle(BusinessRestVerticle.class.getName());
+        cargarConfiguracion().onComplete(ar -> {
+            if (ar.succeeded()) {
+                vertx.deployVerticle(new ParkingMqttClient(this));
+                vertx.deployVerticle(CrudRestVerticle.class.getName());
+                vertx.deployVerticle(BusinessRestVerticle.class.getName());
 
-        System.out.println("ParkingController desplegó todos los verticles correctamente.");
-        startFuture.complete();
+                System.out.println("ParkingController desplegó todos los verticles correctamente.");
+                startFuture.complete();
+            } else {
+                startFuture.fail(ar.cause());
+            }
+        });
+    }
+
+    private Future<Void> cargarConfiguracion() {
+        Promise<Void> promise = Promise.promise();
+        client.get(CRUD_PORT, CRUD_HOST, "/api/sensor_ranges")
+              .as(BodyCodec.jsonArray())
+              .send(ar -> {
+                  if (ar.failed()) {
+                      promise.fail(ar.cause());
+                      return;
+                  }
+
+                  ar.result().body().forEach(obj -> {
+                      io.vertx.core.json.JsonObject json = (io.vertx.core.json.JsonObject) obj;
+                      int idSensor = json.getInteger("id_sensor");
+                      float min = json.getFloat("min_value");
+                      float max = json.getFloat("max_value");
+                      rangosPermitidos.put(idSensor, new Float[]{min, max});
+                  });
+
+                  client.get(CRUD_PORT, CRUD_HOST, "/api/actuators")
+                        .as(BodyCodec.jsonArray())
+                        .send(arAct -> {
+                            if (arAct.failed()) {
+                                promise.fail(arAct.cause());
+                                return;
+                            }
+
+                            io.vertx.core.json.JsonArray acts = arAct.result().body();
+
+                            for (int i = 0; i < acts.size(); i++) {
+                                io.vertx.core.json.JsonObject act = acts.getJsonObject(i);
+                                String ident = act.getString("identificador");
+                                String nombre = act.getString("nombre", "").toLowerCase();
+                                actuadorEstado.put(ident, false);
+                                if (nombre.contains("rojo")) {
+                                    sensorToActuatorOut.putIfAbsent(1, ident);
+                                } else if (nombre.contains("verde")) {
+                                    sensorToActuatorIn.putIfAbsent(1, ident);
+                                }
+                            }
+
+                            client.get(CRUD_PORT, CRUD_HOST, "/api/groups")
+                                  .as(BodyCodec.jsonArray())
+                                  .send(arGrp -> {
+                                      if (arGrp.failed()) {
+                                          promise.fail(arGrp.cause());
+                                          return;
+                                      }
+
+                                      arGrp.result().body().forEach(o -> {
+                                          io.vertx.core.json.JsonObject g = (io.vertx.core.json.JsonObject) o;
+                                          String canal = g.getString("canal_mqtt");
+                                          canalesMQTT.add(canal);
+                                          // Genera tópicos para actuadores basados en el canal del grupo
+                                          String rojo = canal.replace("sensor", "actuador_rojo");
+                                          String verde = canal.replace("sensor", "actuador_verde");
+                                          sensorToActuatorOut.values().forEach(id -> actuadorCanal.put(id, rojo));
+                                          sensorToActuatorIn.values().forEach(id -> actuadorCanal.put(id, verde));
+                                      });
+
+                                      promise.complete();
+                                  });
+                        });
+              });
+        return promise.future();
     }
 
     /** Evalúa si el valor del sensor está fuera de rango */
@@ -70,25 +149,5 @@ public class ParkingController extends AbstractVerticle {
         return canalesMQTT;
     }
 
-    /** Configuración mock de sensores, actuadores y canales */
-    private void inicializarConfiguracion() {
-        // Rango para sensor 1
-        rangosPermitidos.put(1, new Float[]{10f, 30f});
 
-        // Sensor 1 → actuador rojo "act_1"
-        sensorToActuatorOut.put(1, "act_1");
-        // Sensor 1 → actuador verde "act_2"
-        sensorToActuatorIn.put(1, "act_2");
-
-        // Estados iniciales
-        actuadorEstado.put("act_1", false);
-        actuadorEstado.put("act_2", false);
-
-        // Canal de sensor
-        canalesMQTT.add("grupo_1/canal_sensor");
-
-        // Canales de actuadores
-        actuadorCanal.put("act_1", "grupo_1/canal_actuador_rojo");
-        actuadorCanal.put("act_2", "grupo_1/canal_actuador_verde");
-    }
 }
