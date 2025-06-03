@@ -15,11 +15,15 @@ public class CrudRestVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startFuture) {
 
+    String host = System.getenv().getOrDefault("DB_HOST", "localhost");
+    String user = System.getenv().getOrDefault("DB_USER", "root");
+    String pass = System.getenv().getOrDefault("DB_PASS", "Gratis");
+
     jdbc = JDBCClient.createShared(vertx, new JsonObject()
         .put("driver_class", "org.mariadb.jdbc.Driver")
-        .put("url", "jdbc:mariadb://localhost:3306/parkingpt_db")
-        .put("user", "root")
-        .put("password", "Gratis")
+        .put("url", "jdbc:mariadb://" + host + ":3306/parkingpt_db")
+        .put("user", user)
+        .put("password", pass)
     );
 
     Router router = Router.router(vertx);
