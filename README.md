@@ -49,7 +49,7 @@ git clone https://github.com/Juanpareja02/ParkinGPT-DAD_2025.git
 
 2. **Configura la base de datos:**
 - Lanza el script `schema.sql` sobre una instancia MySQL.
-- Crea un usuario y configura sus credenciales en el código (`CrudRestVerticle`, `BusinessRestVerticle`).
+- Define las variables de entorno `DB_HOST`, `DB_USER` y `DB_PASS` con los datos de conexión (por defecto `localhost`, `root` y `Gratis`).
 
 3. **Levanta el broker MQTT:**
 ```bash
@@ -60,6 +60,12 @@ docker run -it -p 1883:1883 eclipse-mosquitto
 ```bash
 mvn clean compile exec:java -Dexec.mainClass=parkingpt.ParkingController
 ```
+
+### Variables de entorno
+
+- `DB_HOST`: host de la base de datos (por defecto `localhost`).
+- `DB_USER`: usuario de conexión (por defecto `root`).
+- `DB_PASS`: contraseña de conexión (por defecto `Gratis`).
 
 ---
 
