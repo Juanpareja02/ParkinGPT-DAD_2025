@@ -51,6 +51,16 @@ public class CrudRestVerticle extends AbstractVerticle {
                         .end(res.result().getRows().toString()));
         });
 
+        router.get("/api/sensorValues/:id_sensor/latest").handler(ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id_sensor"));
+            jdbc.queryWithParams(
+                "SELECT * FROM sensor_values WHERE id_sensor = ? " +
+                "ORDER BY created_at DESC LIMIT 10",
+                new io.vertx.core.json.JsonArray().add(id),
+                res -> ctx.response().putHeader("Content-Type", "application/json")
+                        .end(res.result().getRows().toString()));
+        });
+
         // actuator_states
         router.post("/api/actuatorStates").handler(ctx -> {
             JsonObject body = ctx.getBodyAsJson();
@@ -64,6 +74,42 @@ public class CrudRestVerticle extends AbstractVerticle {
         router.get("/api/actuatorStates/:id_actuator").handler(ctx -> {
             int id = Integer.parseInt(ctx.pathParam("id_actuator"));
             jdbc.queryWithParams("SELECT * FROM actuator_states WHERE id_actuator = ?",
+                new io.vertx.core.json.JsonArray().add(id),
+                res -> ctx.response().putHeader("Content-Type", "application/json")
+                        .end(res.result().getRows().toString()));
+        });
+
+        router.get("/api/actuatorStates/:id_actuator/latest").handler(ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id_actuator"));
+            jdbc.queryWithParams(
+                "SELECT * FROM actuator_states WHERE id_actuator = ? " +
+                "ORDER BY created_at DESC LIMIT 10",
+                new io.vertx.core.json.JsonArray().add(id),
+                res -> ctx.response().putHeader("Content-Type", "application/json")
+                        .end(res.result().getRows().toString()));
+        });
+
+        router.get("/api/group/:id/sensorValues/latest").handler(ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            jdbc.queryWithParams(
+                "SELECT sv.* FROM sensor_values sv " +
+                "JOIN sensors s ON sv.id_sensor = s.id " +
+                "JOIN devices d ON s.id_dispositivo = d.id " +
+                "WHERE d.id_grupo = ? " +
+                "ORDER BY sv.created_at DESC LIMIT 10",
+                new io.vertx.core.json.JsonArray().add(id),
+                res -> ctx.response().putHeader("Content-Type", "application/json")
+                        .end(res.result().getRows().toString()));
+        });
+
+        router.get("/api/group/:id/actuatorStates/latest").handler(ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            jdbc.queryWithParams(
+                "SELECT ast.* FROM actuator_states ast " +
+                "JOIN actuators a ON ast.id_actuator = a.id " +
+                "JOIN devices d ON a.id_dispositivo = d.id " +
+                "WHERE d.id_grupo = ? " +
+                "ORDER BY ast.created_at DESC LIMIT 10",
                 new io.vertx.core.json.JsonArray().add(id),
                 res -> ctx.response().putHeader("Content-Type", "application/json")
                         .end(res.result().getRows().toString()));
