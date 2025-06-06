@@ -35,17 +35,25 @@ public class ParkingController extends AbstractVerticle {
     public void start(Promise<Void> startFuture) {
         client = WebClient.create(vertx);
 
-        cargarConfiguracion().onComplete(ar -> {
-            if (ar.succeeded()) {
-                vertx.deployVerticle(new ParkingMqttClient(this));
-                vertx.deployVerticle(CrudRestVerticle.class.getName());
-                vertx.deployVerticle(BusinessRestVerticle.class.getName());
-
-                System.out.println("ParkingController desplegó todos los verticles correctamente.");
-                startFuture.complete();
-            } else {
-                startFuture.fail(ar.cause());
+        // Primero despliega la API CRUD para asegurarse de que el puerto 8088
+        // esté disponible antes de realizar las peticiones de configuración.
+        vertx.deployVerticle(CrudRestVerticle.class.getName(), arCrud -> {
+            if (arCrud.failed()) {
+                startFuture.fail(arCrud.cause());
+                return;
             }
+
+            cargarConfiguracion().onComplete(ar -> {
+                if (ar.succeeded()) {
+                    vertx.deployVerticle(new ParkingMqttClient(this));
+                    vertx.deployVerticle(BusinessRestVerticle.class.getName());
+
+                    System.out.println("ParkingController desplegó todos los verticles correctamente.");
+                    startFuture.complete();
+                } else {
+                    startFuture.fail(ar.cause());
+                }
+            });
         });
     }
 
