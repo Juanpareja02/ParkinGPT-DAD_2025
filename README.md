@@ -103,6 +103,24 @@ El cliente MQTT procesa estos mensajes y reenvía el evento al bus (`sensor.outO
 
 ---
 
+## 🎮 Uso del sketch `ParkinGpt.ino`
+
+1. Abre el archivo `ParkinGpt.ino` con el IDE de Arduino y ajusta las credenciales:
+
+   ```cpp
+   const char* WIFI_SSID   = "MiRed";
+   const char* WIFI_PASS   = "MiPassword";
+   const char* MQTT_SERVER = "broker.hivemq.com";
+   ```
+
+2. Compila y sube el sketch a tu ESP32.
+3. El sensor publicará la distancia en `grupo_1/canal_sensor` en formato JSON
+   (`{"id_sensor": 1, "valor": <distancia>}`).
+4. Envía `ON`, `OFF` o `AUTO` al tópico `grupo_1/canal_actuador` para controlar
+   los LEDs de forma remota.
+
+---
+
 ## 📦 Postman
 
 El archivo `ParkinGPT.postman_collection.json` contiene todos los endpoints listos para probar. (Asegúrate de tener los puertos activos y los datos insertados en BD antes de lanzar consultas).
