@@ -8,9 +8,9 @@ const int LED_RED_PIN    = 22;  // D22
 const int LED_GREEN_PIN  = 21;  // D21
 
 // Credenciales WiFi y broker MQTT
-const char* WIFI_SSID     = "MiRed";
-const char* WIFI_PASS     = "MiPassword";
-const char* MQTT_SERVER   = "broker.hivemq.com";
+const char* WIFI_SSID     = "Casa Pareja Pedrero";
+const char* WIFI_PASS     = "Gratis12345";
+const char* MQTT_SERVER   = "192.168.1.23";
 
 // Tópicos MQTT de ejemplo
 const char* SENSOR_TOPIC   = "grupo_1/canal_sensor";
